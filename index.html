@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>山河入梦 | 中式人格图鉴</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --paper: #F9F4E8;
+            --ink: #2C3E50;
+            --cinnabar: #C0392B;
+        }
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: var(--paper);
+            color: var(--ink);
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .chinese-border {
+            border: 1px solid var(--ink);
+            position: relative;
+            padding: 2px;
+        }
+        .chinese-border::after {
+            content: '';
+            position: absolute;
+            top: 4px; left: 4px; right: 4px; bottom: 4px;
+            border: 1px solid var(--ink);
+            pointer-events: none;
+        }
+        .btn-ink {
+            background-color: var(--ink);
+            color: var(--paper);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-ink:active {
+            transform: scale(0.98);
+            background-color: var(--cinnabar);
+        }
+        .option-btn {
+            border: 1px solid #d1d5db;
+            transition: all 0.2s;
+            text-align: left;
+            padding: 1.25rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            background: white;
+        }
+        .option-btn:active {
+            border-color: var(--cinnabar);
+            background-color: #fffaf0;
+        }
+        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ink-spinner {
+            width: 60px; height: 60px;
+            border: 4px solid var(--ink);
+            border-top: 4px solid var(--cinnabar);
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .result-card {
+            background-image: radial-gradient(circle at 2px 2px, #eee 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen items-center">
+
+    <div id="welcome-page" class="max-w-md w-full px-6 py-20 flex flex-col items-center justify-center fade-in">
+        <div class="chinese-border bg-white w-full py-16 px-8 shadow-sm mb-12 text-center">
+            <h1 class="text-5xl font-black tracking-[0.3em] mb-6">山河入梦</h1>
+            <p class="text-xs tracking-[0.5em] text-gray-400 mb-10 uppercase">Chinese Archetype Test</p>
+            <div class="h-px bg-gray-200 w-16 mx-auto mb-10"></div>
+            <p class="text-lg leading-loose">
+                入世为剑，出世为琴。<br>
+                在这场关于东方哲学的漫游里，<br>
+                找回你骨子里的精神原型。
+            </p>
+        </div>
+        <button onclick="startQuiz()" class="btn-ink w-full py-5 text-xl tracking-[0.2em] font-bold shadow-xl"> 开启推演 </button>
+    </div>
+
+    <div id="quiz-page" class="max-w-md w-full px-6 py-10 hidden">
+        <div class="mb-8">
+            <div class="flex justify-between items-end mb-2">
+                <span id="progress-text" class="text-xs font-bold text-gray-400 tracking-widest">01 / 25</span>
+                <span class="text-[10px] text-gray-300">卷轴舒展中...</span>
+            </div>
+            <div class="h-[2px] bg-gray-200 w-full">
+                <div id="progress-bar" class="h-[2px] bg-slate-800 transition-all duration-500" style="width: 4%;"></div>
+            </div>
+        </div>
+        
+        <div class="fade-in" id="question-container">
+            <h2 id="question-text" class="text-xl font-bold leading-relaxed mb-10 min-h-[80px]">正在唤醒记忆...</h2>
+            <div id="options-container" class="flex flex-col gap-4"></div>
+        </div>
+    </div>
+
+    <div id="loading-page" class="hidden flex-1 flex flex-col items-center justify-center fade-in">
+        <div class="ink-spinner mb-8"></div>
+        <p class="text-lg tracking-[0.3em] animate-pulse">正在点墨成书...</p>
+    </div>
+
+    <div id="result-page" class="max-w-md w-full px-4 py-8 hidden fade-in">
+        <div class="bg-white chinese-border shadow-2xl p-6 result-card">
+            <div class="text-center border-b border-gray-100 pb-6 mb-6">
+                <div class="inline-block border border-slate-800 px-2 py-1 text-[10px] mb-4 tracking-widest">精神原型图鉴</div>
+                <h1 id="res-name" class="text-5xl font-black text-slate-900 mb-4 tracking-wider">人格名称</h1>
+                <div id="res-tags" class="flex flex-wrap justify-center gap-2"></div>
+            </div>
+
+            <div class="space-y-8">
+                <section>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-1 h-4 bg-red-700"></span>
+                        <h3 class="font-bold text-lg">人格解读</h3>
+                    </div>
+                    <p id="res-desc" class="text-sm leading-loose text-gray-600 text-justify"></p>
+                </section>
+
+                <section class="bg-slate-50 p-5 rounded-sm border-l-4 border-slate-800">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-bold text-lg">代表人物：<span id="res-figure-name" class="text-red-700"></span></h3>
+                        </div>
+                        <span class="text-[10px] bg-slate-800 text-white px-2 py-0.5">名录</span>
+                    </div>
+                    <p id="res-figure-desc" class="text-sm leading-loose text-gray-600 text-justify"></p>
+                </section>
+            </div>
+
+            <div class="mt-10 pt-6 border-t border-dashed border-gray-200 text-center">
+                <p class="text-[10px] text-gray-400 mb-6">—— 山河入梦 · 人文实验室 ——</p>
+                <button onclick="location.reload()" class="w-full py-4 btn-ink text-sm font-bold shadow-lg tracking-widest">重新推演</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const resultsData = {
+            "ISTJ": { name: "恪守矩矱", tags: ["沉稳", "秩序", "恒毅"], desc: "你是这个时代的守望者，内心有一套如星辰运行般精准的法度。你拒绝浮夸与轻佻，相信“一分耕耘一分收获”的质朴真理。在动荡中，你是最令人安心的基石，能够通过严谨的逻辑与极高的自律，将混乱重整为秩序。你对责任的敬畏近乎一种信仰，这种克制的力量让你在长跑中总能成为最后的赢家，却也让你偶尔在感性面前显得过于紧绷。", figure: "曾国藩", figDesc: "晚清第一名臣，他的一生是“平庸者通过极度自律走向圣贤”的完美标本。曾国藩不求近功，崇尚“拙诚”，在最艰难的局势下依然每日坚持日课、反省己过。他代表了中国士大夫阶层中最为坚韧、自省且恪守道德底线的一面。如果你是这种人格，说明你体内流淌着那种“格物致知”的血液，相信通过对自我的修剪，能达到生命的至高境界。" },
+            "ISFJ": { name: "温良慈护", tags: ["慈悲", "守护", "韧性"], desc: "你的灵魂拥有一种泥土般的包容力，能将所有尖锐的苦难转化为温柔的养分。你不追求立于潮头，却甘愿做那盏在深夜长明的灯，照亮归家人的路。你对他人的需求有着极度敏锐的体察，并以奉献为乐。这种温良并非软弱，而是一种基于深厚情感责任感的韧性，一旦你守护的东西受到威胁，你会爆发惊人的防御力量。", figure: "孟母", figDesc: "作为中国传统母亲的典范，“三迁”与“断织”展现的不仅是爱，更是极其宏大的格局与远见。她不仅是一个家庭的守护者，更是文明基因的传递者。她用极致的陪伴与言传身教，为一个伟大的灵魂奠基。选择她，意味着你的力量源自于对他人的成全，你通过建立一种充满安全感的环境，来完成自我价值的升华。" },
+            "INFJ": { name: "隐逸圣哲", tags: ["洞察", "超脱", "悲悯"], desc: "你拥有一双看透因果的慧眼，生命在你眼中不是线性的时间，而是一个循环往复、玄之又玄的“道”。你对万物有着极其深沉的慈悲，却又在情感上保持着一种超越世俗的冷感。你往往能预见事物的走向，这种超前的洞察力让你在人群中显得有些神秘甚至孤傲。你的一生都在试图寻找精神的终极归宿，选择以一种半隐居的姿态，守护内心的那团火。", figure: "老子", figDesc: "道家鼻祖，推崇“无为而治”与“上善若水”。他代表了中国文化中最极致的智慧——以退为进，以柔克刚。老子并不是消极的逃避者，而是通过解构权力和欲望，找到了与宇宙共振的频率。他的玄思与你内心的精神高度共鸣，选择他作为原型，说明你具备一种在大动荡中保持静笃的力量，你的人生目标不是征服世界，而是理解世界。" },
+            "INTJ": { name: "算无遗策", tags: ["远见", "严谨", "冷静"], desc: "你是一个天然的战略家，大脑中时刻运行着复杂的逻辑模型，用以推演未来的每一步。你拒绝情绪化的决策，推崇绝对的理性和全局观。对于你而言，世界是一盘巨大的棋局，而你永远在为十步之后的胜负做准备。这种近乎冷酷的严谨让你具备极高的执行力，却也让你在人情世故中显得有些疏离。你追求的是一种经得起时间考验的系统秩序。", figure: "诸葛亮", figDesc: "智慧的化身，鞠躬尽瘁，死而后已。他以宏大的战略构想和严密的执行力，在乱世中开创三国鼎立的局面。他那种“运筹帷幄之中，决胜千里之外”的冷静，是你精神力量的最佳注脚。诸葛亮代表了中国知识分子最高效、最富有逻辑的一面。如果你是这种人格，说明你体内流淌着一种对完美的执着，你的人生注定是一场向着宏伟目标前进的孤独远征。" },
+            "ISTP": { name: "孤绝冷刃", tags: ["冷峻", "迅捷", "行动"], desc: "你是一个极致的行动派，习惯于用结果代替言说。在复杂的局势中，你总能瞬间捕捉到那个最关键的支点，然后以雷霆手段破局。你独立、疏离，不愿被社交的繁琐礼仪所累。你的孤独不是因为无助，而是因为强大。你像是一柄藏于鞘中的快刀，平时隐没于市，关键时刻却拥有扭转乾坤、向死而生的胆识。", figure: "荆轲", figDesc: "战国第一刺客，风萧萧兮易水寒，壮士一去兮不复还。荆轲不仅仅是一个杀手，他是一个心怀重诺、以死践行的英雄。他代表了中国文化中那种“士为知己者死”的极致孤绝与悲剧美感。如果你是这种人格，说明你是一个在静默中积蓄力量的人，一旦看准目标，便拥有孤注一掷、永不回头的勇气。" },
+            "ISFP": { name: "幽谷兰香", tags: ["审美", "纯粹", "归真"], desc: "你是一个真正的感性探索者，追求一种诗意栖居的理想生活。你对色彩、节奏、气味和自然有着天赋般的敏感，这种审美特质让你在喧嚣的物化世界中显得人格尤为纯粹。你厌恶权力的博弈和沉重的社会枷锁，更倾向于在艺术或自然中寻找真我。你并不试图改变他人，只想在自己构建的小小桃花源里，守住一份内心的宁静与自在。", figure: "陶渊明", figDesc: "中国田园诗派的开创者，弃官归田，代表了中国文化中“安贫乐道”与追求内心真实的审美理想。他不愿为“五斗米折腰”，选择在“采菊东篱下”中完成自我人格的圆满。他代表了中国灵魂中最为轻盈、最接近自然的部分。如果你与陶渊明共鸣，说明你具备一种极其珍贵的“归真”勇气，在物欲横流的时代，你依然能听见内心深处最纯粹的跳动。" },
+            "INFP": { name: "草木柔情", tags: ["感性", "敏感", "审美"], desc: "你拥有一颗如绛珠草般敏感的心，能听见花开的声音，也能体察到露水干涸的哀伤。你活在一个巨大的隐喻世界里，任何细微的情感波动都会在你心中激起惊天巨浪。你不愿被世俗的成功法则所归化，宁愿在废墟上编织一个关于纯粹、理想与美的幻梦。这种极度的感性让你在现实中偶尔受挫，却让你在精神领域拥有无与伦比的深度。", figure: "林黛玉", figDesc: "她是东方美学中“悲剧性理想主义”的巅峰。黛玉不仅是多愁善感，她更是中国文学中第一个具有彻底自觉的个人主义形象。她以泪还情，以诗祭魂，拒绝对庸俗世界做任何妥协。选择她作为代表，意味着你的生命底色是极致的纯粹与孤绝，你来到这世上，不是为了融入，而是为了完成一场关于自我情感的壮丽修行。" },
+            "INTP": { name: "探赜索隐", tags: ["清醒", "独立", "逻辑"], desc: "你是一个精神意义上的“隐者”，游走于逻辑的迷宫中，试图拆解这个世界运行的底层代码。你不屑于追随大众的狂热，更倾向于通过冷峻的观察来还原真相。你的内心有一座防守严密的实验室，外人很难真正触碰你的核心情绪。这种“清醒”让你能看穿生活华袍下的虱子，但也让你在面对热烈的人情世界时，显得疏离而孤独。", figure: "张爱玲", figDesc: "她是民国文坛最冷艳的观察者。张爱玲以一种近乎解剖学的视角书写市井人性，她笔下的月亮不是诗意，而是“苍凉的”。她的一生都在与喧嚣保持距离，追求精神的绝对自治。如果她是你的原型，说明你具备一种透视真相的能力，在喧哗的时代里，你选择用一种疏离而深刻的方式与世界相处，不取悦，不依附。" },
+            "ESTP": { name: "纵横捭阖", tags: ["务实", "胆识", "变通"], desc: "你是一个天生的博弈者，在变局中求生，在利益中平衡。你具备极强的现实感和即兴发挥的能力，总能用非凡的胆识扭转乾坤。你不被死板的教条束缚，相信“活下去并获胜”才是硬道理。在复杂的社会环境中，你像是一条灵活的游鱼，总能嗅到机会的所在。这种务实的智慧让你在职场或商战中极具侵略性，是一个能够将危机转化为契机的生存大师。", figure: "张仪", figDesc: "战国时期的顶级谋略家，以一柄三寸不烂之舌瓦解六国合纵，在诸侯之间游刃有余。他代表了中国文化中极致的现实主义智慧——不谈空洞的道德，只谈实际的利弊。张仪的强大在于他能精准地捕捉人性的弱点并加以利用。选择他，意味着你拥有极强的生存本能和沟通天赋，你的人生是一场充满变数的华丽演出。" },
+            "ESFP": { name: "盛世风流", tags: ["热烈", "当下", "艺术"], desc: "你的人生就是一场永不落幕的盛宴。你活在当下，用全副身心去感受色彩、声音和美酒。你厌恶刻板的教条和阴沉的远景规划，推崇真性情的直接流露。在任何地方，你都是那个能瞬间点燃气氛、散发纯粹生命力的人。你认为活着的意义就在于那一秒钟的灿烂与快乐，这种极具感染力的乐观让你身边从不缺少追随者，也让你的人生充满了传奇色彩。", figure: "李白", figDesc: "大唐的诗仙，绣口一吐就是半个盛唐。他代表了中国文化中最狂放不羁、最具有仙气的审美理想。李白的一生都在追求极致的自由与热烈，他可以在权贵面前醉酒，也可以在名山大川间散发。他的浪漫与肆意，正是你对生命热烈拥抱的写照。选择李白作为原型，说明你的灵魂深处拒绝平庸，你的人生是一首写在大地上的长诗。" },
+            "ENFP": { name: "赤子游吟", tags: ["自由", "热烈", "探索"], desc: "你是一阵永不停息的季风，带着远方的沙尘与花香，吹过干涸的荒原。你拒绝被定义，拒绝被囚禁在任何一种既定的职业或身份中。你眼中的世界是一本翻不完的奇书，每一个陌生人都是一个待开启的故事。你用纯真对抗庸常，用好奇心驱动生命。你的热烈能瞬间点燃他人，但你的灵魂深处，永远有一块地方属于“远方”。", figure: "三毛", figDesc: "她是那个在撒哈拉沙漠里种花的流浪诗人，是用一双布鞋丈量世界的自由灵魂。三毛的文字里没有教科书式的刻板，只有对生命最原始、最赤诚的热爱与哀愁。她代表了生命中最不受羁绊、最勇敢奔赴理想的一面。如果你与她共鸣，说明你体内流淌着不安分的血液，你的人生不需要终点，因为你本身就是一场永恒的奇遇。" },
+            "ENTP": { name: "不羁狂士", tags: ["解构", "智慧", "幽默"], desc: "你是一个智力游戏者，喜欢消解权威，在幽默中反思现实。你的思维极其跳跃，常能从荒诞的表象中提取出深刻的哲理。你拒绝被任何单一的价值观所定义，总是站在思维的边缘，以一种反叛者的视角打量世界。你那种举重若轻的幽默感是你对抗时代荒诞的武器。在欢笑中戳穿真相，是那个永远能给世界带来新鲜视角、让人又爱又恨的“聪明人”。", figure: "东方朔", figDesc: "汉代著名的“奇人”，以“隐于朝”的姿态游戏人生。他在严峻的政治环境中，凭借超人的智慧和幽默感，既完成了劝谏，又保全了自我。东方朔代表了中国文化中那种灵活、通透且带有解构意味的智者形象。如果你是这种人格，说明你拥有一种不被世俗苦难所压垮的韧性，你用智慧去解构沉重，用笑声去消解苦难。" },
+            "ESTJ": { name: "经世治要", tags: ["效率", "担当", "治权"], desc: "你是一个铁面无私的改革者，结果导向是你的最高行为准则。你具备极强的社会责任感和组织纪律性，试图通过建立高效、公正的制度来改变现实。你厌恶空谈和软弱，相信力量必须落实到具体的事务中。这种刚毅的性格让你在领导岗位上极具威慑力，能带领团队攻坚克难。你的人生目标是“修齐治平”，在实打实的功勋中，完成对社会和家族的责任交代。", figure: "王安石", figDesc: "北宋杰出的改革家，面对积贫积弱的残局，他毅然推行变法，虽千万人吾往矣。他代表了中国传统中最为刚烈、务实且勇于担当的一面。王安石的伟大在于他敢于触动深层的利益格局，为了长远的国家利益不计个人毁誉。如果你选择他作为原型，说明你是一个有骨气、有执行力的人，你的人生是为了在具体的现实事务中留下刻痕。" },
+            "ESFJ": { name: "厚德良朋", tags: ["社交", "和谐", "关怀"], desc: "你是人群中的引力中心，通过优雅的行为和真诚的关怀织就一张温暖的社会网络。你天生具备极强的共情力，总能感知他人的需求并适时伸出援手。你维护着传统的价值与社会的和谐，认为人与人之间的深度联结是生命最重要的意义。你这种“厚德载物”的姿态，让你在各种场合都能游刃有余地调和矛盾。", figure: "宋庆龄", figDesc: "她被誉为“国母”，在那个战火连天的时代，她以极大的慈爱和坚定的信仰感召着海内外。她不仅拥有政治上的远见，更具备一种母性式的慈悲，致力于妇女儿童事业与世界和平。她代表了女性力量中最为优雅、博大且富有社会责任感的一面。如果你是这种人格，说明你具备一种整合世界的力量，能用温柔的爱去缝合时代的裂痕。" },
+            "ENFJ": { name: "燃灯先行", tags: ["理想", "牺牲", "启蒙"], desc: "你内心燃烧着一把火，不仅照亮自己，更渴望照亮时代的黑夜。你具备极强的感召力，总能为了更高的社会理想而牺牲个人安稳。你是一个理想主义的布道者，试图通过行动唤醒沉睡的灵魂。在你看来，个体的痛苦是个体，但时代的痛苦必须有人站出来承载。这种“知其不可而为之”的壮烈，是你生命中最耀眼的光芒。", figure: "秋瑾", figDesc: "“鉴湖女侠”秋瑾，中国觉醒女性的先行者。在封建迷雾中，她毅然抛妻离子远赴东瀛求学，最终为革命献身。她代表了那种虽千万人吾往矣的侠气与先行者的孤独。如果你选择她，说明你是一个有脊梁、有骨气的人，你的人生不是为了偏安一隅，而是为了某种伟大的理想。" },
+            "ENTJ": { name: "吞吐风雷", tags: ["意志", "权力", "格局"], desc: "你天生具备统帅气质，在你的蓝图中，世界是可以被重构、被掌控的棋局。你从不畏惧冲突，甚至在压力与对立中能爆发更强的生命力。你的使命感和果敢的决断力，让你在任何群体中都能迅速脱颖而出成为核心。你信奉的是实力的逻辑和秩序的重塑，你的人生不仅是为了生存，更是为了开创一个属于你的时代。", figure: "武则天", figDesc: "作为中国历史上唯一的正统女皇，她以一己之力挑战了延续数千年的性别与权力法则。她不仅是一个权力的博弈者，更是一个时代的宏大设计师。武则天代表了中式哲学中“刚健中正”与“权谋应变”的巅峰结合。选择她，意味着你的灵魂深处藏着一股不可撼动的力量，你来到这个世界，是为了打破旧的枷锁，建立深远的印记。" }
+        };
+
+        const questions = [
+            { q: "行走在浓雾弥漫的古道，前方出现两扇门，你会走进：", options: [{ text: "灯火通明、人声鼎沸的市井酒肆", score: { E: 2 } }, { text: "幽深寂静、孤月高悬的深山古寺", score: { I: 2 } }] },
+            { q: "若要选择一件器物代表你的内心，你会选：", options: [{ text: "刻度精准、规整沉稳的青铜方鼎", score: { S: 2 } }, { text: "质地温润、随光变幻的通灵宝玉", score: { N: 2 } }] },
+            { q: "友人被误解受辱，你的第一反应是：", options: [{ text: "冷静复盘逻辑细节，寻找证据回击", score: { T: 2 } }, { text: "第一时间感知其委屈，给予精神支撑", score: { F: 2 } }] },
+            { q: "若能自建园林，你更偏好：", options: [{ text: "亭台楼阁皆有定式，错落有致", score: { J: 2 } }, { text: "奇石横生，花木随性的野趣", score: { P: 2 } }] },
+            { q: "深夜读史，哪种结局更令你意难平？", options: [{ text: "英雄有报国志，却被腐败规则束缚", score: { J: 1, S: 1 } }, { text: "天才不愿随波逐流，消失在山林间", score: { P: 1, N: 1 } }] },
+            { q: "在盛大的家宴上，你发现谈话庸俗不堪，你会：", options: [{ text: "礼貌地维持微笑，通过应酬掌控局面", score: { E: 2 } }, { text: "借故去庭院赏花观鱼，在独处中恢复", score: { I: 2 } }] },
+            { q: "面对突如其来的变故，你更相信：", options: [{ text: "依据过往的经验和确凿的数据判断", score: { S: 2 } }, { text: "听从电光石火间那一抹直觉", score: { N: 2 } }] },
+            { q: "你认为生命更有意义的状态是：", options: [{ text: "建立功勋，在现实留下不可磨灭的印记", score: { T: 2 } }, { text: "纯粹自在，让灵魂在审美中获得自由", score: { F: 2 } }] },
+            { q: "去一个从未去过的古镇，你会：", options: [{ text: "提前规划好路线，确保旅程高效", score: { J: 2 } }, { text: "随心而行，走哪算哪，享受偶遇", score: { P: 2 } }] },
+            { q: "当有人在背后非议你，你的态度是：", options: [{ text: "公开对质，用逻辑维护名誉", score: { T: 1, E: 1 } }, { text: "嗤之以鼻，不屑为琐事劳神", score: { I: 2 } }] },
+            { q: "你更钦佩哪种才华？", options: [{ text: "经世致用，能解决实际问题的实干", score: { S: 2 } }, { text: "妙笔生花，能描绘虚幻梦境的感性", score: { N: 2 } }] },
+            { q: "在团队中，你通常扮演：", options: [{ text: "积极的组织者，确保每个人都在位", score: { E: 2, J: 1 } }, { text: "边缘的观察者，只提供深刻见解", score: { I: 2, P: 1 } }] },
+            { q: "你更喜欢哪种艺术形式？", options: [{ text: "工整细腻、法度森严的工笔画", score: { S: 1, J: 1 } }, { text: "墨色淋漓、写意纵横的大写意", score: { N: 1, P: 1 } }] },
+            { q: "面对财富，你潜意识里认为：", options: [{ text: "它是实现社会目标和秩序的工具", score: { T: 2 } }, { text: "它是换取自由和情感体验的载体", score: { F: 2 } }] },
+            { q: "若你是一代宗师，你会如何教导弟子？", options: [{ text: "严格遵守门规，从基本功刻苦训练", score: { S: 1, J: 1 } }, { text: "鼓励打破常规，寻找自己的“道”", score: { N: 1, P: 1 } }] },
+            { q: "你的房间通常呈现什么状态？", options: [{ text: "井井有条，每件物品都有固定归宿", score: { J: 2 } }, { text: "略显凌乱，但你能在其中找到美感", score: { P: 2 } }] },
+            { q: "一段关系走向终点，你会：", options: [{ text: "体面复盘，理智地画上句号", score: { T: 2 } }, { text: "深陷感伤，在回忆中沉溺", score: { F: 2 } }] },
+            { q: "你更向往哪种人生结局？", options: [{ text: "诸葛亮式的鞠躬尽瘁，死而后已", score: { J: 2, T: 1 } }, { text: "李白式的五花马千金裘，呼儿换酒", score: { P: 2, F: 1 } }] },
+            { q: "当你学习新事物时，你习惯：", options: [{ text: "先掌握基础定义和事实证据", score: { S: 2 } }, { text: "先把握整体构架和未来趋势", score: { N: 2 } }] },
+            { q: "在高强度的竞争环境中，你靠什么支撑？", options: [{ text: "对成功的强烈渴望和掌控欲", score: { E: 1, J: 1 } }, { text: "内心对专业追求的自洽感", score: { I: 1, P: 1 } }] },
+            { q: "对待社交中的“面子工程”，你：", options: [{ text: "认为这是社会运行成本，圆融处理", score: { E: 1, S: 1 } }, { text: "觉得虚伪疲累，只想坦诚相见", score: { I: 1, N: 1 } }] },
+            { q: "你最向往的周末夜晚是：", options: [{ text: "邀约知己，在热闹的集市畅谈", score: { E: 2 } }, { text: "独守孤灯，读一本深奥的奇书", score: { I: 2 } }] },
+            { q: "当规则与人情冲突，你更倾向：", options: [{ text: "维护规则，因为规则是公义底线", score: { T: 2 } }, { text: "体谅苦衷，寻求温情的补救", score: { F: 2 } }] },
+            { q: "面对重大挫折，你首先做的是：", options: [{ text: "立即分析原因，制定行动计划", score: { J: 2 } }, { text: "允许自己沉淀，等待灵感重启", score: { P: 2 } }] },
+            { q: "如果余生只能带走一样东西，你会选：", options: [{ text: "记载着你一生勋绩的家族族谱", score: { S: 1, T: 1 } }, { text: "一张可以任你涂鸦的白纸", score: { N: 1, P: 1 } }] }
+        ];
+
+        let currentStep = 0;
+        let scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+        function startQuiz() {
+            document.getElementById('welcome-page').classList.add('hidden');
+            document.getElementById('quiz-page').classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentStep >= questions.length) {
+                showLoading();
+                return;
+            }
+            const q = questions[currentStep];
+            const container = document.getElementById('question-container');
+            container.classList.remove('fade-in');
+            void container.offsetWidth; 
+            container.classList.add('fade-in');
+
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('progress-text').innerText = `${String(currentStep + 1).padStart(2, '0')} / ${questions.length}`;
+            document.getElementById('progress-bar').style.width = `${((currentStep + 1) / questions.length) * 100}%`;
+            
+            const optionsBox = document.getElementById('options-container');
+            optionsBox.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn shadow-sm hover:shadow-md";
+                btn.innerText = opt.text;
+                btn.onclick = () => {
+                    for (let key in opt.score) scores[key] += opt.score[key];
+                    currentStep++;
+                    showQuestion();
+                };
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function showLoading() {
+            document.getElementById('quiz-page').classList.add('hidden');
+            document.getElementById('loading-page').classList.remove('hidden');
+            setTimeout(calculateResult, 2500);
+        }
+
+        function calculateResult() {
+            let mbti = "";
+            mbti += scores.E >= scores.I ? "E" : "I";
+            mbti += scores.S >= scores.N ? "S" : "N";
+            mbti += scores.T >= scores.F ? "T" : "F";
+            mbti += scores.J >= scores.P ? "J" : "P";
+
+            const result = resultsData[mbti] || resultsData["INFP"]; 
+            
+            document.getElementById('res-name').innerText = result.name;
+            document.getElementById('res-desc').innerText = result.desc;
+            document.getElementById('res-figure-name').innerText = result.figure;
+            document.getElementById('res-figure-desc').innerText = result.figDesc;
+            
+            const tagContainer = document.getElementById('res-tags');
+            tagContainer.innerHTML = '';
+            result.tags.forEach(tag => {
+                tagContainer.innerHTML += `<span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] tracking-widest font-bold"># ${tag}</span>`;
+            });
+
+            document.getElementById('loading-page').classList.add('hidden');
+            document.getElementById('result-page').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
